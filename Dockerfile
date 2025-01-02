@@ -25,8 +25,8 @@ RUN npm install \
  && npm install pm2 -g
 
 # Étape 6 : Exposer les ports
-EXPOSE 80        # Apache
-EXPOSE 3000      # NestJS
+EXPOSE 80       
+EXPOSE 3000     
 
 # Étape 7 : Démarrer les services
 CMD pm2 start dist/main.js && apache2-foreground
