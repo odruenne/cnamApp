@@ -36,6 +36,9 @@ COPY ./deploy/api/tsconfig.json ./
 
 # Install the application dependencies
 RUN npm install
+    
+# Copy the rest of the application files
+COPY . .
 
 # Build the NestJS application
 RUN npm run build
