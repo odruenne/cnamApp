@@ -1,32 +1,37 @@
-# Étape 1 : Utiliser l'image de base PHP avec Apache
 FROM php:7.4-apache
 
-# Étape 2 : Installer Node.js, npm et PM2
-RUN apt-get update && apt-get install -y \
-    nodejs \
-    npm \
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+COPY ./deploy/api/ /var/www/html/api/
+COPY ./deploy/ /var/www/html/
+
+WORKDIR /var/www/html
+
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
+&& curl -sSk https://getcomposer.org/installer | php -- --disable-tls \
+&& mv composer.phar /usr/local/bin/composer \
+&& apt-get update && apt-get install -y \
+    curl \
+    git \
+    libbz2-dev \
+    libfreetype6-dev \
+    libicu-dev \
+    libjpeg-dev \
+    libmcrypt-dev \
+    libpng-dev \
+    libreadline-dev \
+    libzip-dev \
+    libpq-dev \
     unzip \
     zip \
- && rm -rf /var/lib/apt/lists/* \
- && a2enmod proxy \
- && a2enmod proxy_http
+&& rm -rf /var/lib/apt/lists/* \
+&& a2enmod rewrite headers \
+&& composer install --prefer-dist \
+&& composer dump-autoload --optimize \
+&& composer update
 
-# Étape 3 : Configurer Apache pour agir comme proxy
-COPY ./deploy/my-proxy.conf /etc/apache2/sites-available/000-default.conf
+# Exposer le port 80 pour permettre les connexions entrantes
+EXPOSE 80
 
-# Étape 4 : Copier les fichiers de l'application
-COPY ./deploy/ /var/www/html
-
-# Étape 5 : Installer les dépendances et construire l'application NestJS
-WORKDIR /var/www/html/api
-
-RUN npm install \
- && npm run build \
- && npm install pm2 -g
-
-# Étape 6 : Exposer les ports
-EXPOSE 80       
-EXPOSE 3000     
-
-# Étape 7 : Démarrer les services
-CMD pm2 start dist/main.js && apache2-foreground
+# Définir l'entrée de l'application
+CMD ["apache2-foreground"]
