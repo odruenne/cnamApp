@@ -31,6 +31,7 @@ FROM node:20
 
 WORKDIR /deploy/api
 
+COPY package*.json ./
 
 # Install the application dependencies
 RUN npm install
