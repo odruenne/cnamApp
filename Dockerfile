@@ -1,49 +1,32 @@
-# Étape 1 : Installer PHP et Apache
-FROM php:7.4-apache AS php-apache
-
-ENV COMPOSER_ALLOW_SUPERUSER=1
-
-# Copier les fichiers PHP (par exemple, pour une API existante)
-COPY ./deploy/ /var/www/html
-
-WORKDIR /var/www/html
-
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    unzip \
-    zip && \
-    curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
-
-# Exposer le port Apache
-EXPOSE 80
-
-# Étape 2 : Ajouter Node.js et NestJS
-FROM node:18 AS nestjs
-
-# Copier les fichiers NestJS
-COPY ./nestjs-app/ /usr/src/app
-
-WORKDIR /usr/src/app
-
-# Installer les dépendances et compiler le projet NestJS
-RUN npm install && npm run build
-
-# Exposer le port du serveur NestJS
-EXPOSE 3000
-
-# Étape 3 : Lancer les deux serveurs avec supervisord
+# Étape 1 : Utiliser l'image de base PHP avec Apache
 FROM php:7.4-apache
 
-# Copier les fichiers des étapes précédentes
-COPY --from=php-apache /var/www/html /var/www/html
-COPY --from=nestjs /usr/src/app /usr/src/app
+# Étape 2 : Installer Node.js, npm et PM2
+RUN apt-get update && apt-get install -y \
+    nodejs \
+    npm \
+    unzip \
+    zip \
+ && rm -rf /var/lib/apt/lists/* \
+ && a2enmod proxy \
+ && a2enmod proxy_http
 
-# Installer supervisord pour gérer les deux serveurs
-RUN apt-get update && apt-get install -y supervisor && mkdir -p /var/log/supervisor
+# Étape 3 : Configurer Apache pour agir comme proxy
+COPY ./deploy/my-proxy.conf /etc/apache2/sites-available/000-default.conf
 
-# Ajouter le fichier de configuration supervisord
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Étape 4 : Copier les fichiers de l'application
+COPY ./deploy/ /var/www/html
 
-# Commande de lancement
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Étape 5 : Installer les dépendances et construire l'application NestJS
+WORKDIR /var/www/html/api
+
+RUN npm install \
+ && npm run build \
+ && npm install pm2 -g
+
+# Étape 6 : Exposer les ports
+EXPOSE 80        # Apache
+EXPOSE 3000      # NestJS
+
+# Étape 7 : Démarrer les services
+CMD pm2 start dist/main.js && apache2-foreground
