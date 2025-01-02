@@ -32,6 +32,7 @@ FROM node:20
 WORKDIR ./deploy/api
 
 COPY ./deploy/api/package*.json ./
+COPY ./deploy/api/tsconfig.json ./
 
 # Install the application dependencies
 RUN npm install
