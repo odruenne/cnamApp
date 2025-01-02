@@ -2,9 +2,9 @@ FROM php:7.4-apache
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-COPY ./deployApi/ /var/www/html
+COPY ./deploy/api/ /var/www/html/api/
 
-COPY ./deployApp/ /var/www/html
+COPY ./deploy/ /var/www/html/
 
 WORKDIR /var/www/html
 
