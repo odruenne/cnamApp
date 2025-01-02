@@ -29,10 +29,10 @@
 FROM node:20
 
 
-WORKDIR ./deploy/api
+WORKDIR ./deploy/api/
 
-COPY ./deploy/api/package*.json ./
-COPY ./deploy/api/tsconfig.json ./
+# COPY ./deploy/api/package*.json ./
+# COPY ./deploy/api/tsconfig.json ./
 
 # Install the application dependencies
 RUN npm install
@@ -44,4 +44,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Command to run the application
-CMD ["node", "main.js"]
+CMD ["node", "dist/main"]
