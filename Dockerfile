@@ -22,6 +22,7 @@ RUN npm install \
 
 # Exposer le port 80 pour permettre les connexions entrantes
 EXPOSE 80
+EXPOSE 3000
 
 # Définir l'entrée de l'application
 CMD pm2 start ./dist/main.js && apache2-foreground
