@@ -25,4 +25,5 @@ RUN npm install \
 EXPOSE 80
 
 # Définir l'entrée de l'application
-CMD pm2 start ./dist/main.js && apache2-foreground
+# CMD pm2 start ./dist/main.js && apache2-foreground
+CMD npm run start:dev
