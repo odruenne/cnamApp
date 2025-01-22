@@ -19,7 +19,6 @@ RUN npm install \
  && npm install pm2 -g \
  && env PATH=$PATH:/usr/local/lib/node_modules/pm2/bin/pm2 \
  && npm run build
- && npm run start:dev
 
 # Exposer le port 80 pour permettre les connexions entrantes
 EXPOSE 80
